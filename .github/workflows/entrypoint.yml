@@ -1,0 +1,32 @@
+name: Entrypoint
+
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        type: boolean
+        default: false
+        description: "Run build"
+      deploy:
+        type: boolean
+        default: false
+        description: "Run deploy"
+  push:
+    paths:
+      - 'Dockerfile'
+    branches-ignore:
+      - 'release-please**'
+    
+jobs:
+  build:
+    name: Build
+    if: ${{ inputs.build == true || github.event_name == 'push' }}
+    uses: EBCONT-Conference/devopsdays.demo.reusable-workflow.build.docker/.github/workflows/entrypoint.yml@v1
+    secrets: inherit
+
+  deployment:
+    name: Deployment
+    uses: EBCONT-Conference/devopsdays.demo.reusable-workflow.deployment.helm/.github/workflows/entrypoint.yml@v1
+    if: ${{ inputs.deploy == true || github.event_name == 'push' }}
+    needs: [ build ]
+    secrets: inherit
